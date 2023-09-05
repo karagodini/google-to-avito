@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel to XML</title>
+</head>
+<body>
+    <h3>Excel to XML Converter for Avito</h3>
+    <form action="/convert" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".xlsx" required>
+        <button id="btn" type="submit">Преобразовать в XML</button>
+    </form>
+    <div class="links">
+      <a id="xmlDownloadLink" href="#" style="display: none;">Скачать XML</a>
+      <button id="copyLinkButton">Копировать ссылку</button>
+    </div>
+    
+
+    <script>
+      const xmlDownloadLink = document.getElementById('xmlDownloadLink');
+      const copyLinkButton = document.getElementById('copyLinkButton');
+      const links = document.querySelector('.links')
+
+      document.querySelector('form').addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const formData = new FormData();
+        const fileInput = document.querySelector('input[type="file"]');
+        formData.append('file', fileInput.files[0]);
+
+        fetch('/convert', {
+          method: 'POST',
+          body: formData,
+        })
+          .then((response) => response.text())
+          .then((xmlString) => {
+            xmlDownloadLink.href = encodeURIComponent(xmlString);
+            xmlDownloadLink.style.display = 'block';
+            links.style.display = 'block';
+            xmlDownloadLink.textContent = xmlDownloadLink.getAttribute('href');
+          })
+          .catch((error) => console.error(error));
+        
+      });
+
+      copyLinkButton.addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.value = xmlDownloadLink.href;
+        document.body.appendChild(input);
+        input.select();
+        input.setSelectionRange(0, 99999); // Для поддержки мобильных устройств
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        copyLinkButton.textContent = 'Скопировано!';
+        setTimeout(() => {
+          copyLinkButton.textContent = 'Копировать ссылку';
+        }, 1500); // Вернем исходный текст через 1.5 секунды
+      });
+
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'style.css';
+      document.head.appendChild(link);
+    </script>
+
+</body>
+</html>
